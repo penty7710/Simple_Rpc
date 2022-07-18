@@ -2,6 +2,7 @@ package com.pty.customizeProtocol;
 
 import com.pty.SerializerType.Serializer;
 import com.pty.config.SerializerConfig;
+import com.pty.message.RpcMessage;
 import com.pty.message.RpcRequestMessage;
 import com.pty.message.RpcResponseMessage;
 import io.netty.buffer.ByteBuf;
@@ -22,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 @ChannelHandler.Sharable
-public class MessageCodec extends MessageToMessageCodec {
+public class MessageCodec extends MessageToMessageCodec<ByteBuf,RpcMessage> {
 
     /**
      * 编码，给数据加上头部信息，同时将数据序列化，让其可以在网络中传输
@@ -41,10 +42,10 @@ public class MessageCodec extends MessageToMessageCodec {
      *  4B  requestId（请求的Id） 1B fill(填充，无意义） 4B legth(消息长度)
      */
     @Override
-    protected void encode(ChannelHandlerContext channelHandlerContext, Object o, List list) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, RpcMessage msg, List<Object> out) throws Exception {
         AtomicInteger atomicInteger = new AtomicInteger(0);
 
-        ByteBuf buffer = channelHandlerContext.alloc().buffer();
+        ByteBuf buffer = ctx.alloc().buffer();
         //4字节的魔数
         buffer.writeBytes("pety".getBytes(StandardCharsets.UTF_8));
 
@@ -56,27 +57,25 @@ public class MessageCodec extends MessageToMessageCodec {
         buffer.writeByte(SerializerConfig.getSerializerType());
 
         //1字节的消息类型
-        //0：请求消息  1：响应消息
-        int messageType = o instanceof RpcRequestMessage?0:1;
-        buffer.writeByte(messageType);
+        //0：请求消息  1：响应消息 2:ping消息
+        buffer.writeByte(msg.getMessageType());
 
         //4字节的请求id
-        //使用原子类进行递增
-        buffer.writeInt(atomicInteger.getAndAdd(1));
+        buffer.writeInt(msg.getMessageId());
 
         //1字节的填充字符
         buffer.writeByte(0XFF);
 
         //获取序列化器
         Serializer algorithm = SerializerConfig.getSerializer();
-        byte[] bytes = algorithm.serialize(o);
+        byte[] bytes = algorithm.serialize(msg);
 
         //4字节的消息长度
         buffer.writeInt(bytes.length);
 
         //写入消息
         buffer.writeBytes(bytes);
-        list.add(buffer);
+        out.add(buffer);
     }
 
 
@@ -97,17 +96,16 @@ public class MessageCodec extends MessageToMessageCodec {
      *  4B  requestId（请求的Id） 1B fill(填充，无意义） 4B legth(消息长度)
      */
     @Override
-    protected void decode(ChannelHandlerContext channelHandlerContext, Object o, List list) throws Exception {
-        ByteBuf in = (ByteBuf) o;
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         //4字节的魔数
         int magicCode = in.readInt();
-        
+
         //1字节的版本
         byte version = in.readByte();
-        
+
         //1字节的序列化类型
         byte serializerType = in.readByte();
-        
+
         //1字节的消息类型
         byte messageType = in.readByte();
 
@@ -127,6 +125,6 @@ public class MessageCodec extends MessageToMessageCodec {
         Class<?> message = messageType == 0?RpcRequestMessage.class: RpcResponseMessage.class;
         //将消息字节数组转变为java对象
         Object rpcmessage = SerializerConfig.getSerializer().deserialize(bytes, message);
-        list.add(rpcmessage);
+        out.add(rpcmessage);
     }
 }

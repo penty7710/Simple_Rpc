@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @date : 2022/7/16 16:01
  */
 @Data
-public class RpcResponseMessage<T>  implements Serializable {
+public class RpcResponseMessage<T> extends RpcMessage implements Serializable {
 
     //状态码
     private Integer statusCode;
@@ -37,5 +37,10 @@ public class RpcResponseMessage<T>  implements Serializable {
         message.statusCode = result.getStatusCode();
         message.msg = result.getMsg();
         return message;
+    }
+
+    @Override
+    public int getMessageType() {
+        return RPC_MESSAGE_TYPE_RESPONSE;
     }
 }

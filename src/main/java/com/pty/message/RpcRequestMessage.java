@@ -1,6 +1,7 @@
 package com.pty.message;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +15,8 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RpcRequestMessage implements Serializable {
+@Builder
+public class RpcRequestMessage extends RpcMessage implements Serializable {
 
     //调用接口的全限定类名，服务器根据他找到对应的实现
     private String interfaceName;
@@ -33,6 +35,10 @@ public class RpcRequestMessage implements Serializable {
 
 
     //方法的返回值参数类型
-    private Class<?> [] returnTypes;
+    private Class<?>  returnTypes;
 
+    @Override
+    public int getMessageType() {
+        return RPC_MESSAGE_TYPE_REQUEST;
+    }
 }

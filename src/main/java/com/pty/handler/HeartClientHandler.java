@@ -34,7 +34,7 @@ public class HeartClientHandler extends ChannelDuplexHandler {
                log.info("已经3秒没有写入数据");
                //发送心跳消息，如果发送失败则直接关闭连接：
                //ChannelFutureListener.CLOSE_ON_FAILURE：发送失败直接关闭连接
-               //TODO
+               //TODO rpcpingmessage
                ctx.writeAndFlush(new RpcPingMessage()).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
            }
        }

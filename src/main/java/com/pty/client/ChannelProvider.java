@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 负责服务端的初始化和建立连接
  * @author : pety
  * @date : 2022/7/18 15:33
  */
@@ -32,7 +33,7 @@ public class ChannelProvider {
 
     private static Bootstrap bootstrap;
 
-    private static NioEventLoopGroup group;
+    public static NioEventLoopGroup group;
 
 
     static{
@@ -47,7 +48,7 @@ public class ChannelProvider {
      * @param inetSocketAddress
      * @return
      */
-    public Channel getChannel(InetSocketAddress inetSocketAddress){
+    public  static Channel getChannel(InetSocketAddress inetSocketAddress){
         String key = inetSocketAddress.toString();
         if(channelMap.containsKey(key)){
             Channel channel = channelMap.get(key);
@@ -77,6 +78,7 @@ public class ChannelProvider {
         LoggingHandler loggingHandler = new LoggingHandler(LogLevel.DEBUG);
         MessageCodec messageCodec = new MessageCodec();
         HeartClientHandler heartClientHandler = new HeartClientHandler();
+        RpcResponseMessageHandler rpcResponseMessageHandler = new RpcResponseMessageHandler();
         bootstrap.group(group)
                 .channel(NioSocketChannel.class)
                 //设置连接超时时间：10s，如果10秒未连接抛出异常
@@ -94,7 +96,8 @@ public class ChannelProvider {
                         socketChannel.pipeline().addLast(loggingHandler);
                         //心跳处理器
                         socketChannel.pipeline().addLast(heartClientHandler);
-                        //TODO 消息处理器
+                        //消息处理器
+                        socketChannel.pipeline().addLast(rpcResponseMessageHandler);
                     }
                 });
     }

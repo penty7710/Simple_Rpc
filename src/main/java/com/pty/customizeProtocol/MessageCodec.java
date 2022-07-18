@@ -52,6 +52,7 @@ public class MessageCodec extends MessageToMessageCodec {
         buffer.writeByte(1);
 
         //1字节的序列化类型
+        //0：Java 1：Json 默认是Java
         buffer.writeByte(SerializerConfig.getSerializerType());
 
         //1字节的消息类型
@@ -60,6 +61,7 @@ public class MessageCodec extends MessageToMessageCodec {
         buffer.writeByte(messageType);
 
         //4字节的请求id
+        //使用原子类进行递增
         buffer.writeInt(atomicInteger.getAndAdd(1));
 
         //1字节的填充字符

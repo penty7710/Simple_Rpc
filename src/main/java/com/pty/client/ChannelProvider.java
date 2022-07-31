@@ -75,9 +75,13 @@ public class ChannelProvider {
      * @return
      */
     public static void initChannel(){
+        //日志处理器
         LoggingHandler loggingHandler = new LoggingHandler(LogLevel.DEBUG);
+        //消息编解码处理器
         MessageCodec messageCodec = new MessageCodec();
+        //心跳处理器
         HeartClientHandler heartClientHandler = new HeartClientHandler();
+        //消息处理器
         RpcResponseMessageHandler rpcResponseMessageHandler = new RpcResponseMessageHandler();
         bootstrap.group(group)
                 .channel(NioSocketChannel.class)

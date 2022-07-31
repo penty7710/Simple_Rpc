@@ -25,8 +25,8 @@ public class ClientProxy implements InvocationHandler {
     /**
      * 创建代理对象
      */
-    public Object getProxy(Object target) {
-        return Proxy.newProxyInstance(target.getClass().getClassLoader(), target.getClass().getInterfaces(), this);
+    public <T>T getProxy(Class<T> target) {
+        return (T) Proxy.newProxyInstance(target.getClassLoader(), new Class<?>[]{target}, this);
     }
 
 
@@ -40,7 +40,7 @@ public class ClientProxy implements InvocationHandler {
                 .returnTypes(method.getReturnType())
                 .build();
         rpcRequestMessage.setMessageId(MessageIdGenerator.nextId());
-        RpcResponseMessage message = (RpcResponseMessage) rpcClient.sendRequest(rpcRequestMessage);
-        return message;
+        Object data = rpcClient.sendRequest(rpcRequestMessage);
+        return data;
     }
 }

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Properties;
 
 /**
+ * 序列化配置
  * @author : pety
  * @date : 2022/7/17 23:41
  */
@@ -20,7 +21,7 @@ public class SerializerConfig {
 
     private static String algorithm;
 
-    private static String className = algorithm+"Serializer";
+    private static final String PATH = "com.pty.SerializerType.";
 
     private static List<String> list = new ArrayList<>();
 
@@ -42,6 +43,10 @@ public class SerializerConfig {
         }
     }
 
+    //由于static修饰的代码块，变量在类加载的时候是从上到下依次执行的。
+    // 所以如果将这代码块放在静态代码块上面，会导致这里的 algorithm 为nul
+    private static String className = PATH+algorithm+"Serializer";
+
 
     /**
      * 返回选定的序列化类型。默认是Java的序列化方式
@@ -61,6 +66,7 @@ public class SerializerConfig {
     }
 
 
+    //利用反射创建出序列化器实例
     public static Serializer getSerializer(){
         try {
             Class<?> clazz = Class.forName(className);

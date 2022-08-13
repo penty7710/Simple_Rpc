@@ -37,6 +37,7 @@ public class RpcClient {
         //如果channel不存在或者没有连接
         if(channel == null || !channel.isActive()){
             log.error("channel创建失败");
+            close();
             return null;
         }
         //发送数据，发送数据完成后，将当前promise和消息id加入到集合中
@@ -63,5 +64,10 @@ public class RpcClient {
             e.printStackTrace();
             return null;
         }
+    }
+
+    //关闭连接
+    public void close(){
+        ChannelProvider.group.shutdownGracefully();
     }
 }

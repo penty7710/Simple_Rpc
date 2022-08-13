@@ -9,8 +9,10 @@ import lombok.Data;
 @Data
 public abstract class RpcMessage {
 
+    //消息id
     private int messageId;
 
+    //消息类型 0为rpc请求消息 1为rpc返回消息 2为rpc ping消息
     private int messageType;
 
 

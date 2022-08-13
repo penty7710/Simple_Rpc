@@ -2,7 +2,10 @@ package com.pty.server;
 
 import com.pty.customizeProtocol.MessageCodec;
 import com.pty.customizeProtocol.ProtocolFramDecoder;
+import com.pty.handler.HeartServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -41,7 +44,8 @@ public class RpcServer {
         LoggingHandler loggingHandler = new LoggingHandler(LogLevel.DEBUG);
         //编解码器
         MessageCodec messageCodec = new MessageCodec();
-        //
+        //心跳处理
+        HeartServerHandler heartServerHandler = new HeartServerHandler();
 
         NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -59,9 +63,16 @@ public class RpcServer {
                             ch.pipeline().addLast(new ProtocolFramDecoder());
                             ch.pipeline().addLast(messageCodec);
                             ch.pipeline().addLast(loggingHandler);
+                            ch.pipeline().addLast(heartServerHandler);
                         }
                     });
-            bootstrap.bind(host,port).sync();
+            //阻塞直到建立连接
+            ChannelFuture channelFuture = bootstrap.bind(port).sync();
+            channelFuture.channel().closeFuture().addListener((ChannelFutureListener) channelFuture1->{
+                //关闭连接
+                workerGroup.shutdownGracefully();
+                bossGroup.shutdownGracefully();
+            });
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

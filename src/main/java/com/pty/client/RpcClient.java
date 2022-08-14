@@ -1,11 +1,14 @@
 package com.pty.client;
 
 import com.pty.message.RpcRequestMessage;
+import com.pty.registry.ServerDiscovery;
+import com.pty.registry.impl.NacosServerDiscoveryImpl;
 import io.netty.channel.Channel;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,18 +24,26 @@ public class RpcClient {
     //用来保存 请求id和
     public static final Map<Integer, Promise<Object>> PROMISE;
 
+    //服务发现
+    private final ServerDiscovery  serverDiscovery;
+
     static{
         PROMISE = new ConcurrentHashMap<>();
     }
 
+    public RpcClient(){
+        serverDiscovery = new NacosServerDiscoveryImpl();
+    }
+
 
     /**
-     * 向服务端发送请求 TODO
+     * 向服务端发送请求
      * @param message
      */
     public Object sendRequest(RpcRequestMessage message){
-        //TODO 需要修改为套接字对象
-        Channel channel = ChannelProvider.getChannel(null);
+        //通过服务发现找到服务信息
+        InetSocketAddress address = serverDiscovery.getService(message.getInterfaceName());
+        Channel channel = ChannelProvider.getChannel(address);
         DefaultPromise<Object> defaultPromise = new DefaultPromise<>(ChannelProvider.group.next());
         //如果channel不存在或者没有连接
         if(channel == null || !channel.isActive()){

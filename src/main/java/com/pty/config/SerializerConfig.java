@@ -39,7 +39,7 @@ public class SerializerConfig {
             properties.load(in);
             algorithm = properties.getProperty("serializer.algorithm");
         } catch (IOException e) {
-            log.error("读取配置文件失败"+e.getMessage());
+            log.error("读取序列化配置文件失败"+e.getMessage());
         }
     }
 

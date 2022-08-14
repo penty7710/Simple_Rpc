@@ -3,6 +3,8 @@ package com.pty.server;
 import com.pty.customizeProtocol.MessageCodec;
 import com.pty.customizeProtocol.ProtocolFramDecoder;
 import com.pty.handler.HeartServerHandler;
+import com.pty.registry.ServerRegistry;
+import com.pty.registry.impl.NacosServerRegistryImpl;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -26,14 +28,16 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class RpcServer {
-
     private final String host;
     private final int port;
+    //服务注册
+    private final ServerRegistry registry;
 
     //初始化
     public RpcServer(String host,int port){
         this.host=host;
         this.port = port;
+        registry = new NacosServerRegistryImpl();
     }
 
     /**
@@ -46,8 +50,12 @@ public class RpcServer {
         MessageCodec messageCodec = new MessageCodec();
         //心跳处理
         HeartServerHandler heartServerHandler = new HeartServerHandler();
+        //rpc请求消息处理器
+        RpcRequestMessageHandler rpcRequestMessageHandler = new RpcRequestMessageHandler();
 
+        //bossGroup专门负责处理连接
         NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        //workerGroup专门负责处理读写事务
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
         ServerBootstrap bootstrap = new ServerBootstrap();
 
@@ -64,6 +72,7 @@ public class RpcServer {
                             ch.pipeline().addLast(messageCodec);
                             ch.pipeline().addLast(loggingHandler);
                             ch.pipeline().addLast(heartServerHandler);
+                            ch.pipeline().addLast(rpcRequestMessageHandler);
                         }
                     });
             //阻塞直到建立连接
@@ -74,6 +83,7 @@ public class RpcServer {
                 bossGroup.shutdownGracefully();
             });
         } catch (InterruptedException e) {
+            log.info("服务端启动出错");
             e.printStackTrace();
         }
     }

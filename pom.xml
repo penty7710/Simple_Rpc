@@ -49,6 +49,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!--nacos 服务-->
+        <dependency>
+            <groupId>com.alibaba.nacos</groupId>
+            <artifactId>nacos-client</artifactId>
+            <version>1.3.0</version>
+        </dependency>
+
     </dependencies>
 
 </project>

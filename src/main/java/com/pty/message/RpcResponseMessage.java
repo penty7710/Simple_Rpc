@@ -32,10 +32,11 @@ public class RpcResponseMessage<T> extends RpcMessage implements Serializable {
         return message;
     }
 
-    public static <T> RpcResponseMessage<T> fail(ResponseResult result){
+    public static <T> RpcResponseMessage<T> fail(T exception){
         RpcResponseMessage<T> message = new RpcResponseMessage<>();
-        message.statusCode = result.getStatusCode();
-        message.msg = result.getMsg();
+        message.statusCode = ResponseResult.FAIL.getStatusCode();
+        message.msg = ResponseResult.FAIL.getMsg();
+        message.data = exception;
         return message;
     }
 

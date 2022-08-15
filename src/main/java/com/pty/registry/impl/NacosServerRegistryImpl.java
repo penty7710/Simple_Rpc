@@ -21,16 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class NacosServerRegistryImpl implements ServerRegistry {
 
-    //负载均衡器
-    private static LoadBalancer loadBalancer ;
-
     //本地缓存
     private static final Map<String,Object> SERVICEMAP = new ConcurrentHashMap<>();
     private static final Set<String> REGISTEREDSERVICE = ConcurrentHashMap.newKeySet();
 
-    static {
-        loadBalancer = LoadBalancerConfig.getLoadBalance();
-    }
 
     /**
      * 将服务注册到nacos

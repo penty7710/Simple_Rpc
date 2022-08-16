@@ -22,6 +22,6 @@ public interface ServerRegistry {
      * @param service
      * @param <T>
      */
-    <T> void getService(T service);
+    <T> void localRegistry(T service);
 
 }

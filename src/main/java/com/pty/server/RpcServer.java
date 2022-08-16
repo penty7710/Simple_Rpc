@@ -1,5 +1,7 @@
 package com.pty.server;
 
+import com.pty.Application;
+import com.pty.annotation.RpcService;
 import com.pty.customizeProtocol.MessageCodec;
 import com.pty.customizeProtocol.ProtocolFramDecoder;
 import com.pty.handler.HeartServerHandler;
@@ -20,7 +22,9 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.reflections.Reflections;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,6 +44,7 @@ public class RpcServer {
         this.host=host;
         this.port = port;
         registry = new NacosServerRegistryImpl();
+        new Application().autoRegistry(host, port);
     }
 
     /**

@@ -48,7 +48,7 @@ public class NacosServerRegistryImpl implements ServerRegistry {
      * @param <T>
      */
     @Override
-    public <T> void getService(T service) {
+    public <T> void localRegistry(T service) {
         String serviceName = service.getClass().getCanonicalName();
         if(REGISTEREDSERVICE.contains(serviceName)){
             return;
@@ -57,9 +57,15 @@ public class NacosServerRegistryImpl implements ServerRegistry {
 
         //将接口名称注册到本地缓存
         Class<?>[] interfaces = service.getClass().getInterfaces();
+        if(interfaces.length == 0){
+            log.info("异常，实现接口数为0");
+            throw new RuntimeException();
+        }
+
         for(Class temp : interfaces){
             String name = temp.getCanonicalName();
             SERVICEMAP.put(name,service);
+            log.info("接口：{},提供{}服务",temp.getCanonicalName(),serviceName);
         }
     }
 
@@ -71,7 +77,7 @@ public class NacosServerRegistryImpl implements ServerRegistry {
     public Object getService(String serviceName){
         Object service = SERVICEMAP.get(serviceName);
         if(service == null){
-            log.info("服务为找到");
+            log.info("服务未找到");
             throw new RuntimeException();
         }
         return service;
